@@ -1,5 +1,5 @@
 # CI/CD recipes - platform-agnostic build commands
-# Call as: just cicd::build, just cicd::test, etc.
+# Call as: just cicd::build, just cicd::test-template, etc.
 
 # Build the Copier runner Docker image
 build:
@@ -8,8 +8,7 @@ build:
 
 # Test template generation produces working project
 test-template:
-    @echo "Testing template generation..."
-    ./scripts/test-template.sh
+    just test-template
 
 # Build documentation to public/
 pages:
