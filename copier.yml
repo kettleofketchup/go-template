@@ -12,12 +12,27 @@ tool_name:
   help: "CLI tool binary name (e.g., 'mytool' produces ./bin/mytool)"
   default: "{{ project_name }}"
 
+ci_platform:
+  type: str
+  help: "CI/CD platform for automated builds and deployments"
+  choices:
+    gitlab: "GitLab CI"
+    github: "GitHub Actions"
+
 gitlab_url:
   type: str
+  when: "{{ ci_platform == 'gitlab' }}"
   help: "GitLab instance URL (e.g., gitlab.example.com)"
   default: "gitlab.lan"
 
 gitlab_registry:
   type: str
+  when: "{{ ci_platform == 'gitlab' }}"
   help: "Docker registry path (e.g., gitlab.example.com:5050/group)"
   default: "{{ gitlab_url }}:5050/{{ project_name }}"
+
+github_registry:
+  type: str
+  when: "{{ ci_platform == 'github' }}"
+  help: "GitHub Container Registry path"
+  default: "ghcr.io/{{ project_name }}"
