@@ -1,0 +1,23 @@
+_min_copier_version: "9.0.0"
+_subdirectory: template
+_templates_suffix: .jinja
+
+project_name:
+  type: str
+  help: "Project name (used for repo directory and Go module path)"
+  validator: "{% if not project_name %}Project name is required{% endif %}"
+
+tool_name:
+  type: str
+  help: "CLI tool binary name (e.g., 'mytool' produces ./bin/mytool)"
+  default: "{{ project_name }}"
+
+gitlab_url:
+  type: str
+  help: "GitLab instance URL (e.g., gitlab.example.com)"
+  default: "gitlab.lan"
+
+gitlab_registry:
+  type: str
+  help: "Docker registry path (e.g., gitlab.example.com:5050/group)"
+  default: "{{ gitlab_url }}:5050/{{ project_name }}"

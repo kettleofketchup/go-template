@@ -1,0 +1,59 @@
+stages:
+  - build
+  - test
+  - pages
+variables:
+  IMAGE_NAME: go-template
+  IMAGE_TAG: latest
+
+# Build the copier runner image
+build-image:
+  tags:
+    - dind
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG -f docker/Dockerfile .
+    - docker save $IMAGE_NAME:$IMAGE_TAG > image.tar
+  artifacts:
+    paths:
+      - image.tar
+    expire_in: 1 hour
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Test template generates working project
+test-template:
+  stage: test
+  tags:
+    - dind
+  image: docker:latest
+  services:
+    - docker:dind
+  needs:
+    - build-image
+  before_script:
+    - docker load < image.tar
+    - apk add --no-cache git go golangci-lint curl bash
+    - curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+  script:
+    - just test-template
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Deploy documentation to GitLab Pages
+pages:
+  stage: pages
+  image: ghcr.io/astral-sh/uv:python3.12-bookworm
+  script:
+    - uv sync
+    - uv run mkdocs build
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH

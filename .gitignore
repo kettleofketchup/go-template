@@ -1,0 +1,14 @@
+# Worktrees
+.worktrees/
+
+# Output directories
+output/
+
+# Documentation build
+public/
+site/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
