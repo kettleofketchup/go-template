@@ -17,14 +17,17 @@ variables:
     paths:
       - .go/pkg/mod/
 
-# Test stage - runs on all merge requests and tags
+.just-setup:
+  before_script:
+    - curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+
+# Test stage
 lint:
   stage: test
   image: golangci/golangci-lint:latest
-  extends: .go-cache
+  extends: [.go-cache, .just-setup]
   script:
-    - cd src/${TOOL_NAME}
-    - golangci-lint run --timeout 5m
+    - just cicd::lint
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_TAG
@@ -32,22 +35,20 @@ lint:
 test:
   stage: test
   image: golang:${GO_VERSION}
-  extends: .go-cache
+  extends: [.go-cache, .just-setup]
   script:
-    - cd src/${TOOL_NAME}
-    - go test -race -cover -v ./...
+    - just cicd::test
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_TAG
 
-# Build stage - verify compilation
+# Build stage
 build:
   stage: build
   image: golang:${GO_VERSION}
-  extends: .go-cache
+  extends: [.go-cache, .just-setup]
   script:
-    - cd src/${TOOL_NAME}
-    - go build -o ../../bin/${TOOL_NAME} .
+    - just cicd::build
   artifacts:
     paths:
       - bin/
@@ -56,7 +57,7 @@ build:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_TAG
 
-# Docker stage - build and push on tags only
+# Docker stage
 docker:
   stage: docker
   image: docker:latest
@@ -66,17 +67,12 @@ docker:
     DOCKER_TAG: ${CI_REGISTRY_IMAGE}/${TOOL_NAME}:${CI_COMMIT_TAG}
     DOCKER_LATEST: ${CI_REGISTRY_IMAGE}/${TOOL_NAME}:latest
   before_script:
+    - apk add --no-cache curl bash
+    - curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - |
-      docker build \
-        --build-arg VERSION=${CI_COMMIT_TAG} \
-        --build-arg COMMIT=${CI_COMMIT_SHORT_SHA} \
-        --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
-        -t $DOCKER_TAG \
-        -f docker/Dockerfile.${TOOL_NAME} .
+    - just cicd::docker $DOCKER_TAG
     - docker push $DOCKER_TAG
-    # Tag as latest for semver tags (v*)
     - |
       if echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+'; then
         docker tag $DOCKER_TAG $DOCKER_LATEST
@@ -85,13 +81,15 @@ docker:
   rules:
     - if: $CI_COMMIT_TAG
 
-# Pages stage - deploy docs on main branch
+# Pages stage
 pages:
   stage: pages
   image: ghcr.io/astral-sh/uv:python3.12-bookworm
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
   script:
-    - uv sync
-    - uv run mkdocs build
+    - just cicd::pages
   artifacts:
     paths:
       - public
