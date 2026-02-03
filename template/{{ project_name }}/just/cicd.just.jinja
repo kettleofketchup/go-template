@@ -34,7 +34,7 @@ test:
 build:
     @echo "Building binary..."
     @mkdir -p {{ '{{' }} BIN_DIR {{ '}}' }}
-    cd {{ '{{' }} TOOL_FOLDER {{ '}}' }} && go build -o {{ '{{' }} BIN_DIR {{ '}}' }}/{{ '{{' }} TOOL_NAME {{ '}}' }} .
+    cd {{ '{{' }} TOOL_FOLDER {{ '}}' }} && go mod tidy && go build -o {{ '{{' }} BIN_DIR {{ '}}' }}/{{ '{{' }} TOOL_NAME {{ '}}' }} .
 
 # Build docker image
 [group('cicd')]
