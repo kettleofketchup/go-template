@@ -4,17 +4,20 @@
 
 # Build the Copier runner Docker image
 [group('cicd')]
+[no-cd]
 build:
     @echo "Building Copier runner image..."
-    DOCKER_BUILDKIT=0 docker build -t go-template:latest -f docker/Dockerfile .
+    docker build -t go-template:latest -f docker/Dockerfile .
 
 # Test template generation produces working project
 [group('cicd')]
+[no-cd]
 test-template:
     just testing::test-template
 
 # Build documentation to public/
 [group('cicd')]
+[no-cd]
 pages:
     @echo "Building documentation..."
     uv sync
