@@ -10,6 +10,7 @@
 | `gitlab_url` | string | `gitlab.lan` | `ci_platform == 'gitlab'` | GitLab instance URL |
 | `gitlab_registry` | string | `{{ gitlab_url }}:5050/{{ project_name }}` | `ci_platform == 'gitlab'` | Docker registry path |
 | `github_registry` | string | `ghcr.io/{{ project_name }}` | `ci_platform == 'github'` | GitHub Container Registry |
+| `self_update` | bool | `true` | - | Include self-update command in CLI |
 
 ### Derived Values
 
@@ -73,7 +74,7 @@ These are computed from the template variables:
         ├── cmd/
         │   ├── root.go      # Root command + Viper
         │   ├── version.go   # Version subcommand
-        │   └── update.go    # Self-update command
+        │   └── update.go    # Self-update command (if self_update=true)
         ├── internal/        # Private packages
         └── version/
             └── version.go   # Build-time version

@@ -37,3 +37,8 @@ github_registry:
   when: "{{ ci_platform == 'github' }}"
   help: "GitHub Container Registry path"
   default: "ghcr.io/{{ project_name }}"
+
+self_update:
+  type: bool
+  help: "Include self-update command (downloads latest release from GitHub/GitLab)"
+  default: true

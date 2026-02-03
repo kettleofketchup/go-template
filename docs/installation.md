@@ -4,17 +4,32 @@
 
 ### Required
 
-- **Docker** - For running the Copier template generator
-- **Git** - For version control and SSH access to GitLab
+- **Git** - For version control and SSH access to GitLab/GitHub
 - **just** - For running build recipes (auto-installed by `./dev`)
 
-### Optional
+### Optional (choose one)
 
-- **uv** - For local documentation development (`uv run mkdocs serve`)
+- **uv** - Python package manager for running Copier directly
+- **Docker** - For running the Copier template generator in a container
 
-## Building the Template Runner
+## Option 1: Using uv (Recommended)
 
-The template runs inside a Docker container that includes:
+The simplest way to use the template is with [uv](https://docs.astral.sh/uv/):
+
+```bash
+# Create a new project from the template
+uvx copier copy gh:kettleofketchup/go-template ./my-project
+
+# Or with specific answers
+uvx copier copy gh:kettleofketchup/go-template ./my-project \
+    --data project_name=myproject \
+    --data tool_name=myctl \
+    --data ci_platform=github
+```
+
+## Option 2: Using Docker
+
+The template can also run inside a Docker container that includes:
 
 - Python 3.12 with Copier
 - GitLab CLI (glab)
