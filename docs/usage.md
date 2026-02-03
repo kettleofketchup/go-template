@@ -16,8 +16,10 @@ Copier will prompt for:
 |--------|-------------|---------|
 | `project_name` | Repository directory name | `myproject` |
 | `tool_name` | CLI binary name | `myctl` |
-| `gitlab_url` | GitLab instance URL | `gitlab.lan` |
-| `gitlab_registry` | Docker registry path | `gitlab.lan:5050/myproject` |
+| `ci_platform` | CI/CD platform choice | `gitlab` or `github` |
+| `gitlab_url` | GitLab instance URL (if GitLab) | `gitlab.lan` |
+| `gitlab_registry` | Docker registry path (if GitLab) | `gitlab.lan:5050/myproject` |
+| `github_registry` | GitHub Container Registry (if GitHub) | `ghcr.io/myproject` |
 
 ### What Happens
 
@@ -73,6 +75,42 @@ Open http://localhost:8000 to view docs.
 just docker::build
 ```
 
+## CI/CD Commands
+
+The `cicd` module provides platform-agnostic CI/CD commands that work identically whether you're using GitLab CI or GitHub Actions:
+
+| Recipe | Description |
+|--------|-------------|
+| `just cicd::lint` | Run golangci-lint |
+| `just cicd::test` | Run tests with race detection |
+| `just cicd::build` | Build the binary |
+| `just cicd::docker <tag>` | Build Docker image |
+| `just cicd::docker-push <tag>` | Build and push Docker image |
+| `just cicd::pages` | Build MkDocs documentation |
+
+These commands are called by the CI pipeline, but you can also run them locally.
+
+## Updating from Template
+
+When the template is updated, you can pull in changes to your project:
+
+```bash
+# Interactive update (recommended)
+just copier::update
+
+# Show what would change without applying
+just copier::diff
+
+# Non-interactive update (for scripts/CI)
+just copier::update-auto
+
+# Re-copy entire template (for major changes)
+just copier::recopy
+
+# View current template answers
+just copier::answers
+```
+
 ## Project Structure
 
 Your generated project includes:
@@ -86,7 +124,9 @@ myproject/
 ├── docs/               # MkDocs documentation
 ├── docker/             # Dockerfiles
 ├── just/               # justfile modules
-└── .gitlab-ci.yml      # CI pipeline
+│   └── cicd.just       # CI/CD recipes
+├── .gitlab-ci.yml      # GitLab CI (if ci_platform=gitlab)
+└── .github/workflows/  # GitHub Actions (if ci_platform=github)
 ```
 
 See [Template Reference](template-reference.md) for full details.
