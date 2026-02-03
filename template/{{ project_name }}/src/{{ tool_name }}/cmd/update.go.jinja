@@ -172,7 +172,7 @@ func getGitHubRelease(repoPath string) (*ReleaseInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch release: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GitHub API returned status: %s", resp.Status)
@@ -223,7 +223,7 @@ func getGitLabRelease(repoPath string) (*ReleaseInfo, error) {
 			lastErr = err
 			continue
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			lastErr = fmt.Errorf("GitLab API returned status: %s", resp.Status)
@@ -261,13 +261,12 @@ func getBinaryName() string {
 	goos := runtime.GOOS
 	goarch := runtime.GOARCH
 
-	name := "{{ tool_name }}"
+	name := fmt.Sprintf("%s_%s_%s", "{{ tool_name }}", goos, goarch)
 	if goos == "windows" {
 		name += ".exe"
 	}
 
-	// Try OS-arch specific name first
-	return fmt.Sprintf("%s_%s_%s", "{{ tool_name }}", goos, goarch)
+	return name
 }
 
 func downloadAndInstall(downloadURL string) error {
@@ -287,7 +286,7 @@ func downloadAndInstall(downloadURL string) error {
 	if err != nil {
 		return fmt.Errorf("failed to download: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("download failed with status: %s", resp.Status)
@@ -299,22 +298,24 @@ func downloadAndInstall(downloadURL string) error {
 	}
 
 	_, err = io.Copy(out, resp.Body)
-	out.Close()
+	if closeErr := out.Close(); closeErr != nil && err == nil {
+		err = closeErr
+	}
 	if err != nil {
-		os.Remove(tmpFile)
+		_ = os.Remove(tmpFile)
 		return fmt.Errorf("failed to save file: %w", err)
 	}
 
 	// Make executable
 	if err := os.Chmod(tmpFile, 0755); err != nil {
-		os.Remove(tmpFile)
+		_ = os.Remove(tmpFile)
 		return fmt.Errorf("failed to make executable: %w", err)
 	}
 
 	// Replace current binary
 	fmt.Println("Installing update...")
 	if err := atomicReplace(currentExe, tmpFile); err != nil {
-		os.Remove(tmpFile)
+		_ = os.Remove(tmpFile)
 		return fmt.Errorf("failed to replace binary: %w", err)
 	}
 

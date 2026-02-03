@@ -90,9 +90,33 @@ The `cicd` module provides platform-agnostic CI/CD commands that work identicall
 
 These commands are called by the CI pipeline, but you can also run them locally.
 
+## Self-Update Command
+
+Your generated CLI includes a built-in update command that downloads the latest release:
+
+```bash
+# Check for and install updates
+./bin/myctl update
+```
+
+**How it works:**
+
+1. Detects the release source from your git remote URL (GitHub or GitLab)
+2. Queries the releases API for the latest version
+3. Compares against current version
+4. Downloads the appropriate binary for your OS/architecture
+5. Atomically replaces the running binary
+
+**Supported platforms:**
+
+- GitHub releases (`github.com`)
+- GitLab releases (gitlab.com and self-hosted instances)
+- Automatic binary naming: `<tool>_<os>_<arch>` (e.g., `myctl_linux_amd64`)
+- Windows support with `.exe` extension
+
 ## Updating from Template
 
-When the template is updated, you can pull in changes to your project:
+When the go-template is updated, you can pull in changes to your project:
 
 ```bash
 # Interactive update (recommended)

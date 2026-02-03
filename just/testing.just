@@ -39,6 +39,9 @@ test-template: _build
     cd {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }} && just build
     cd {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }} && just test
     cd {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }} && just lint
+    @echo "=== Executing built binary ==="
+    {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }}/bin/{{ TEST_TOOL_NAME }} --help
+    {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }}/bin/{{ TEST_TOOL_NAME }} version
     cd {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }} && just docker::build
     @echo "=== Template test passed ==="
     @rm -rf {{ TEST_OUTPUT_DIR }}

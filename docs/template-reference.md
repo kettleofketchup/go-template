@@ -72,7 +72,8 @@ These are computed from the template variables:
         ├── go.mod
         ├── cmd/
         │   ├── root.go      # Root command + Viper
-        │   └── version.go   # Version subcommand
+        │   ├── version.go   # Version subcommand
+        │   └── update.go    # Self-update command
         ├── internal/        # Private packages
         └── version/
             └── version.go   # Build-time version
