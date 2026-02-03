@@ -6,7 +6,7 @@
 [group('cicd')]
 build:
     @echo "Building Copier runner image..."
-    docker build -t go-template:latest -f docker/Dockerfile .
+    DOCKER_BUILDKIT=0 docker build -t go-template:latest -f docker/Dockerfile .
 
 # Test template generation produces working project
 [group('cicd')]
