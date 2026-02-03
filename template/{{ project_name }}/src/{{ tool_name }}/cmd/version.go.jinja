@@ -4,7 +4,11 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+{% if ci_platform == 'gitlab' -%}
 	"{{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}/version"
+{%- else -%}
+	"github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}/version"
+{%- endif %}
 )
 
 var versionCmd = &cobra.Command{
