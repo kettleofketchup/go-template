@@ -1,4 +1,8 @@
+{% if ci_platform == 'gitlab' -%}
 module {{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}
+{%- else -%}
+module github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}
+{%- endif %}
 
 go 1.23
 

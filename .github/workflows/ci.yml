@@ -14,6 +14,17 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v2
 
+      - name: Debug directory contents
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Directory listing ==="
+          ls -la
+          echo "=== Docker directory ==="
+          ls -la docker/
+          echo "=== Docker version ==="
+          docker version
+
       - name: Build image
         run: just cicd::build
 
