@@ -15,9 +15,10 @@ tool_name:
 ci_platform:
   type: str
   help: "CI/CD platform for automated builds and deployments"
+  default: gitlab
   choices:
-    gitlab: "GitLab CI"
-    github: "GitHub Actions"
+    "GitLab CI": gitlab
+    "GitHub Actions": github
 
 gitlab_url:
   type: str
