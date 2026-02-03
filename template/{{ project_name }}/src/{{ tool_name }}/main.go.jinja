@@ -1,6 +1,10 @@
 package main
 
+{% if ci_platform == 'gitlab' -%}
 import "{{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}/cmd"
+{%- else -%}
+import "github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}/cmd"
+{%- endif %}
 
 func main() {
 	cmd.Execute()
