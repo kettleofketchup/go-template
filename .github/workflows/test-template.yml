@@ -1,0 +1,174 @@
+name: Test Template Generation
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  test-gitlab-generation:
+    name: Test GitLab CI Generation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Install copier
+        run: pipx install copier
+
+      - name: Generate GitLab project
+        run: |
+          mkdir -p /tmp/test-gitlab
+          copier copy . /tmp/test-gitlab \
+            --trust \
+            --defaults \
+            -d project_name=testproj \
+            -d tool_name=testtool \
+            -d ci_platform=gitlab \
+            -d gitlab_url=gitlab.example.com \
+            -d gitlab_registry=gitlab.example.com:5050/testproj
+
+      - name: Verify GitLab CI files
+        run: |
+          echo "=== Checking GitLab CI file exists ==="
+          test -f /tmp/test-gitlab/testproj/.gitlab-ci.yml || (echo "ERROR: .gitlab-ci.yml not found" && exit 1)
+          echo "✓ .gitlab-ci.yml exists"
+
+          echo "=== Checking .github does NOT exist ==="
+          test ! -d /tmp/test-gitlab/testproj/.github || (echo "ERROR: .github should not exist for GitLab" && exit 1)
+          echo "✓ .github directory not created"
+
+          echo "=== Checking cicd.just exists ==="
+          test -f /tmp/test-gitlab/testproj/just/cicd.just || (echo "ERROR: cicd.just not found" && exit 1)
+          echo "✓ cicd.just exists"
+
+          echo "=== Checking copier.just exists ==="
+          test -f /tmp/test-gitlab/testproj/just/copier.just || (echo "ERROR: copier.just not found" && exit 1)
+          echo "✓ copier.just exists"
+
+      - name: Verify GitLab CI content
+        run: |
+          echo "=== Checking GitLab CI uses just cicd:: recipes ==="
+          grep -q "just cicd::lint" /tmp/test-gitlab/testproj/.gitlab-ci.yml || (echo "ERROR: just cicd::lint not found" && exit 1)
+          grep -q "just cicd::test" /tmp/test-gitlab/testproj/.gitlab-ci.yml || (echo "ERROR: just cicd::test not found" && exit 1)
+          grep -q "just cicd::build" /tmp/test-gitlab/testproj/.gitlab-ci.yml || (echo "ERROR: just cicd::build not found" && exit 1)
+          grep -q "just cicd::pages" /tmp/test-gitlab/testproj/.gitlab-ci.yml || (echo "ERROR: just cicd::pages not found" && exit 1)
+          echo "✓ All just cicd:: recipes found in GitLab CI"
+
+      - name: Verify docker.just uses GitLab registry
+        run: |
+          grep -q "gitlab.example.com:5050/testproj" /tmp/test-gitlab/testproj/just/docker.just || (echo "ERROR: GitLab registry not found in docker.just" && exit 1)
+          echo "✓ GitLab registry configured correctly"
+
+  test-github-generation:
+    name: Test GitHub Actions Generation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Install copier
+        run: pipx install copier
+
+      - name: Generate GitHub project
+        run: |
+          mkdir -p /tmp/test-github
+          copier copy . /tmp/test-github \
+            --trust \
+            --defaults \
+            -d project_name=testproj \
+            -d tool_name=testtool \
+            -d ci_platform=github \
+            -d github_registry=ghcr.io/testorg/testproj
+
+      - name: Verify GitHub Actions files
+        run: |
+          echo "=== Checking GitHub Actions files exist ==="
+          test -f /tmp/test-github/testproj/.github/workflows/ci.yml || (echo "ERROR: ci.yml not found" && exit 1)
+          echo "✓ ci.yml exists"
+
+          test -f /tmp/test-github/testproj/.github/workflows/pages.yml || (echo "ERROR: pages.yml not found" && exit 1)
+          echo "✓ pages.yml exists"
+
+          echo "=== Checking .gitlab-ci.yml does NOT exist ==="
+          test ! -f /tmp/test-github/testproj/.gitlab-ci.yml || (echo "ERROR: .gitlab-ci.yml should not exist for GitHub" && exit 1)
+          echo "✓ .gitlab-ci.yml not created"
+
+          echo "=== Checking cicd.just exists ==="
+          test -f /tmp/test-github/testproj/just/cicd.just || (echo "ERROR: cicd.just not found" && exit 1)
+          echo "✓ cicd.just exists"
+
+      - name: Verify GitHub Actions content
+        run: |
+          echo "=== Checking CI workflow uses just cicd:: recipes ==="
+          grep -q "just cicd::lint" /tmp/test-github/testproj/.github/workflows/ci.yml || (echo "ERROR: just cicd::lint not found" && exit 1)
+          grep -q "just cicd::test" /tmp/test-github/testproj/.github/workflows/ci.yml || (echo "ERROR: just cicd::test not found" && exit 1)
+          grep -q "just cicd::build" /tmp/test-github/testproj/.github/workflows/ci.yml || (echo "ERROR: just cicd::build not found" && exit 1)
+          echo "✓ All just cicd:: recipes found in ci.yml"
+
+          echo "=== Checking Pages workflow ==="
+          grep -q "just cicd::pages" /tmp/test-github/testproj/.github/workflows/pages.yml || (echo "ERROR: just cicd::pages not found" && exit 1)
+          echo "✓ just cicd::pages found in pages.yml"
+
+      - name: Verify docker.just uses GitHub registry
+        run: |
+          grep -q "ghcr.io/testorg/testproj" /tmp/test-github/testproj/just/docker.just || (echo "ERROR: GitHub registry not found in docker.just" && exit 1)
+          echo "✓ GitHub registry configured correctly"
+
+  test-generated-project-builds:
+    name: Test Generated Project Builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Install copier
+        run: pipx install copier
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          install-only: true
+
+      - name: Generate project
+        run: |
+          mkdir -p /tmp/test-build
+          copier copy . /tmp/test-build \
+            --trust \
+            --defaults \
+            -d project_name=testproj \
+            -d tool_name=testtool \
+            -d ci_platform=github \
+            -d github_registry=ghcr.io/testorg/testproj
+
+      - name: Run just --list
+        working-directory: /tmp/test-build/testproj
+        run: just --list --list-submodules
+
+      - name: Run just cicd::build
+        working-directory: /tmp/test-build/testproj
+        run: just cicd::build
+
+      - name: Verify binary exists
+        run: |
+          test -f /tmp/test-build/testproj/bin/testtool || (echo "ERROR: Binary not found" && exit 1)
+          echo "✓ Binary built successfully"
+
+      - name: Run just cicd::test
+        working-directory: /tmp/test-build/testproj
+        run: just cicd::test
+
+      - name: Run just cicd::lint
+        working-directory: /tmp/test-build/testproj
+        run: just cicd::lint
