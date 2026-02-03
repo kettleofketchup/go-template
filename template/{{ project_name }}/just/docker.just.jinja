@@ -7,15 +7,26 @@ VERSION := `git describe --tags --always 2>/dev/null || echo "dev"`
 COMMIT := `git rev-parse --short HEAD 2>/dev/null || echo "unknown"`
 DATE := `date -u +%Y-%m-%dT%H:%M:%SZ`
 
+{% if ci_platform == 'gitlab' -%}
 DOCKER_REGISTRY := "{{ gitlab_registry }}"
+{%- else -%}
+DOCKER_REGISTRY := "{{ github_registry }}"
+{%- endif %}
 DOCKER_TAG := DOCKER_REGISTRY + "/" + TOOL_NAME + ":" + VERSION
 DOCKER_LATEST := DOCKER_REGISTRY + "/" + TOOL_NAME + ":latest"
 DOCKERFILE := PROJECT_ROOT + "/docker/Dockerfile." + TOOL_NAME
 
+{% if ci_platform == 'gitlab' -%}
 # Login to GitLab registry
 login:
     @echo "Logging into GitLab registry..."
     docker login {{ gitlab_url }}:5050
+{%- else -%}
+# Login to GitHub Container Registry
+login:
+    @echo "Logging into GitHub Container Registry..."
+    @echo "Use: echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin"
+{%- endif %}
 
 # Build Docker image
 build:
