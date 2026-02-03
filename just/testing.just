@@ -12,6 +12,7 @@ TEST_GITLAB_REGISTRY := TEST_GITLAB_URL + ":5050/" + TEST_PROJECT_NAME
 
 # Build the docker image (local dependency)
 [private]
+[no-cd]
 _build:
     @echo "Building Copier runner image..."
     docker build -t {{ IMAGE_NAME }}:{{ IMAGE_TAG }} -f docker/Dockerfile .
