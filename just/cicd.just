@@ -20,5 +20,5 @@ test-template:
 [no-cd]
 pages:
     @echo "Building documentation..."
-    uv sync
-    uv run mkdocs build
+    cd {{ justfile_directory() }} && uv sync
+    cd {{ justfile_directory() }} && uv run mkdocs build

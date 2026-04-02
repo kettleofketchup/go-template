@@ -2,8 +2,8 @@
 # Call as: just release::all, just release::linux, etc.
 
 TOOL_NAME := "{{ tool_name }}"
-TOOL_FOLDER := env_var("PWD") + "/src/" + TOOL_NAME
-DIST_DIR := env_var("PWD") + "/dist"
+TOOL_FOLDER := justfile_directory() + "/src/" + TOOL_NAME
+DIST_DIR := justfile_directory() + "/dist"
 VERSION := `git describe --tags --always 2>/dev/null || echo "dev"`
 COMMIT := `git rev-parse --short HEAD 2>/dev/null || echo "unknown"`
 DATE := `date -u +%Y-%m-%dT%H:%M:%SZ`

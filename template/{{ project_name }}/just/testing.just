@@ -1,7 +1,7 @@
 # Testing recipes
 # Call as: just testing::coverage, just testing::bench
 
-TOOL_FOLDER := env_var("PWD") + "/src/{{ tool_name }}"
+TOOL_FOLDER := justfile_directory() + "/src/{{ tool_name }}"
 
 # Run tests with coverage report
 coverage:
