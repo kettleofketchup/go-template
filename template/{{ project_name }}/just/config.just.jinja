@@ -10,7 +10,7 @@ TOOL_FOLDER := justfile_directory() + "/src/" + TOOL_NAME
 schema:
     #!/usr/bin/env bash
     set -euo pipefail
-    cd {{ '{{' }} TOOL_FOLDER {{ '}}' }} && go run . config schema > {{ '{{' }} invocation_directory() {{ '}}' }}/config/schema.json
+    cd {{ '{{' }} TOOL_FOLDER {{ '}}' }} && go run . config schema > {{ '{{' }} justfile_directory() {{ '}}' }}/config/schema.json
     echo "Generated config/schema.json"
 
 # Check that schema.json is up to date with config struct
@@ -27,5 +27,5 @@ check:
         echo "Run: just config::schema"
         exit 1
     fi
-    cd {{ '{{' }} TOOL_FOLDER {{ '}}' }} && go run . --config {{ '{{' }} invocation_directory() {{ '}}' }}/config/{{ '{{' }} TOOL_NAME {{ '}}' }}.yaml.example config show > /dev/null
+    cd {{ '{{' }} TOOL_FOLDER {{ '}}' }} && go run . --config {{ '{{' }} justfile_directory() {{ '}}' }}/config/{{ '{{' }} TOOL_NAME {{ '}}' }}.yaml.example config show > /dev/null
     echo "Config schema and example are up to date"
