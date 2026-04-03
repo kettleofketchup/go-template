@@ -46,9 +46,13 @@ These are computed from the template variables:
 ├── CLAUDE.md                # AI assistant instructions
 ├── dev                      # Bootstrap script
 ├── justfile                 # Root justfile with modules
+├── lefthook.yml             # Pre-commit hooks
 ├── .claude/
 │   ├── agents/              # Claude Code agents
 │   └── skills/              # Claude Code skills
+├── config/
+│   ├── {{ tool_name }}.yaml.example  # Example configuration file
+│   └── schema.json          # JSON Schema for config validation
 ├── docker/
 │   ├── Dockerfile.{{ tool_name }}
 │   └── certificates/        # CA certificates
@@ -66,15 +70,20 @@ These are computed from the template variables:
 │   ├── certs.just           # Certificate management (certs::*)
 │   ├── testing.just         # Test recipes (testing::*)
 │   ├── cicd.just            # CI/CD recipes (cicd::*)
-│   └── copier.just          # Template updates (copier::*)
+│   ├── copier.just          # Template updates (copier::*)
+│   ├── git.just             # Git operations (git::*)
+│   └── config.just          # Config management (config::*)
 └── src/
     └── {{ tool_name }}/
         ├── main.go
         ├── go.mod
         ├── cmd/
-        │   ├── root.go      # Root command + Viper
+        │   ├── root.go      # Root command + Viper config
+        │   ├── config.go    # Config subcommands (show, path, schema)
         │   ├── version.go   # Version subcommand
         │   └── update.go    # Self-update command (if self_update=true)
+        ├── config/
+        │   └── config.go    # Config struct package
         ├── internal/        # Private packages
         └── version/
             └── version.go   # Build-time version
@@ -151,6 +160,19 @@ Template update management:
 | `just copier::diff` | Show diff against template |
 | `just copier::recopy` | Re-copy entire template |
 | `just copier::answers` | Show current template answers |
+
+### Git Module (`git::`)
+
+| Recipe | Description |
+|--------|-------------|
+| `just git::version <bump>` | Bump version tag and push (major/minor/hotfix) |
+
+### Config Module (`config::`)
+
+| Recipe | Description |
+|--------|-------------|
+| `just config::schema` | Generate JSON Schema from config struct |
+| `just config::check` | Verify schema.json and example config are up to date |
 
 ## CI Pipeline
 
