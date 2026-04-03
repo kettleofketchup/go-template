@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=schema.json
+#
+# {{ tool_name }} configuration
+# Copy this file to {{ tool_name }}.yaml and modify as needed.
+#
+# Environment variables override config file values.
+# Prefix: {{ tool_name | upper | replace('-', '_') }}_
+# Example: {{ tool_name | upper | replace('-', '_') }}_LOG_LEVEL=debug
+
+log:
+  # Log verbosity: debug, info, warn, error
+  level: info
+  # Output format: text, json
+  format: text
