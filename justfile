@@ -7,6 +7,7 @@ set dotenv-load
 # Modules - call as `just module::recipe`
 mod cicd 'just/cicd.just'
 mod copier 'just/copier.just'
+mod git 'just/git.just'
 mod testing 'just/testing.just'
 
 # Import top-level recipes (merged into root namespace)
