@@ -4,6 +4,8 @@
 dev:
     @echo "Setting up development environment..."
     uv sync
+    @command -v lefthook > /dev/null 2>&1 || { echo "Installing lefthook..."; go install github.com/evilmartians/lefthook@latest; }
+    lefthook install
     @echo "Done! Development environment ready."
     @echo ""
     @echo "Available commands:"

@@ -42,6 +42,8 @@ test-template: _build
     @echo "=== Executing built binary ==="
     {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }}/bin/{{ TEST_TOOL_NAME }} --help
     {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }}/bin/{{ TEST_TOOL_NAME }} version
+    {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }}/bin/{{ TEST_TOOL_NAME }} config show
+    {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }}/bin/{{ TEST_TOOL_NAME }} config path
     cd {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }} && just docker::build
     @echo "=== Template test passed ==="
     @rm -rf {{ TEST_OUTPUT_DIR }}

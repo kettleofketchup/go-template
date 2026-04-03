@@ -5,15 +5,17 @@ set quiet
 set dotenv-load
 
 # Modules - call as `just module::recipe`
-mod go 'just/go.just'
-mod docs 'just/docs.just'
-mod docker 'just/docker.just'
-mod release 'just/release.just'
-mod compose 'just/compose.just'
 mod certs 'just/certs.just'
-mod testing 'just/testing.just'
+mod config 'just/config.just'
 mod cicd 'just/cicd.just'
+mod compose 'just/compose.just'
 mod copier 'just/copier.just'
+mod docker 'just/docker.just'
+mod docs 'just/docs.just'
+mod git 'just/git.just'
+mod go 'just/go.just'
+mod release 'just/release.just'
+mod testing 'just/testing.just'
 
 # Import top-level recipes (merged into root namespace)
 import 'just/dev.just'
@@ -21,7 +23,7 @@ import 'just/dev.just'
 # Variables
 TOOL_NAME := "{{ tool_name }}"
 PROJECT_NAME := "{{ project_name }}"
-TOOL_FOLDER := env_var("PWD") + "/src/" + TOOL_NAME
+TOOL_FOLDER := justfile_directory() + "/src/" + TOOL_NAME
 
 # List all available recipes
 default:

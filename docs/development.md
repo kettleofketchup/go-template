@@ -16,7 +16,8 @@ This will:
 4. Run `just test` in the generated project
 5. Run `just lint` in the generated project
 6. Run `just docker::build` in the generated project
-7. Clean up on success, keep artifacts on failure
+7. Execute `config show` and `config path` commands
+8. Clean up on success, keep artifacts on failure
 
 ### Test Values
 
@@ -57,6 +58,36 @@ just cicd::pages
 
 These recipes are called by both GitLab CI and GitHub Actions, ensuring consistent behavior across platforms.
 
+## Pre-commit Hooks (Lefthook)
+
+Generated projects include [Lefthook](https://github.com/evilmartians/lefthook) for pre-commit validation.
+
+### Setup
+
+Lefthook is automatically installed and configured when you run:
+
+```bash
+just dev
+```
+
+This installs `lefthook` via `go install` (if not already present) and runs `lefthook install` to set up git hooks.
+
+### Configured Hooks
+
+| Hook | Trigger | What It Checks |
+|------|---------|----------------|
+| `config-schema` | Files matching `src/*/config/*.go` | Runs `just config::check` to verify schema.json is current |
+
+### Manual Checks
+
+```bash
+# Run the config schema check manually
+just config::check
+
+# Regenerate schema after changing config struct
+just config::schema
+```
+
 ## Template File Conventions
 
 ### Jinja Templates
@@ -81,6 +112,7 @@ Files without `.jinja` are copied verbatim:
 - `docs/includes/abbreviations.md`
 - `.gitignore`
 - `just/copier.just`
+- `just/git.just`
 
 ### Directory Names
 
@@ -122,7 +154,9 @@ The project uses just modules with explicit paths for tab completion:
 ```just
 # Root justfile
 mod cicd 'just/cicd.just'      # cicd::build, cicd::test
+mod config 'just/config.just'  # config::schema, config::check
 mod copier 'just/copier.just'  # copier::update, copier::diff
+mod git 'just/git.just'        # git::version
 mod testing 'just/testing.just' # testing::test-template
 
 import 'just/dev.just'  # Merged into root namespace

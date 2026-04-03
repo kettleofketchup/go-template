@@ -69,6 +69,57 @@ just docs::serve
 
 Open http://localhost:8000 to view docs.
 
+## Configuration
+
+Your generated project includes a typed configuration system powered by [Viper](https://github.com/spf13/viper).
+
+### Config File
+
+Place a config file at `config/<tool_name>.yaml` (or pass `--config <path>`):
+
+```yaml
+# yaml-language-server: $schema=schema.json
+log:
+  level: info    # debug, info, warn, error
+  format: text   # text, json
+```
+
+An example config is provided at `config/<tool_name>.yaml.example`.
+
+### Environment Variables
+
+All config values can be overridden via environment variables with the `<TOOL_NAME>_` prefix:
+
+```bash
+MYCTL_LOG_LEVEL=debug ./bin/myctl
+MYCTL_LOG_FORMAT=json ./bin/myctl
+```
+
+Nested keys use underscores: `log.level` → `MYCTL_LOG_LEVEL`.
+
+### Config Commands
+
+```bash
+# Show current config values
+./bin/myctl config show
+
+# Show which config file is loaded
+./bin/myctl config path
+
+# Output JSON Schema for the config file
+./bin/myctl config schema
+```
+
+### JSON Schema
+
+Generate the JSON Schema from the config struct:
+
+```bash
+just config::schema
+```
+
+This creates `config/schema.json`, which is referenced by `config/<tool>.yaml.example` for IDE autocompletion and validation.
+
 ### Build Docker Image
 
 ```bash
@@ -89,6 +140,18 @@ The `cicd` module provides platform-agnostic CI/CD commands that work identicall
 | `just cicd::pages` | Build MkDocs documentation |
 
 These commands are called by the CI pipeline, but you can also run them locally.
+
+## Version Tagging
+
+Bump and push semantic version tags:
+
+```bash
+just git::version major    # v1.0.0 → v2.0.0
+just git::version minor    # v1.0.0 → v1.1.0
+just git::version hotfix   # v1.0.0 → v1.0.1
+```
+
+This auto-detects the latest `v*` tag, increments the specified component, creates an annotated tag, and pushes it. If no tags exist, it starts from `v0.0.0`.
 
 ## Self-Update Command
 
@@ -141,14 +204,21 @@ Your generated project includes:
 
 ```
 myproject/
+├── config/             # Configuration files
+│   ├── myctl.yaml.example  # Example config with schema ref
+│   └── schema.json     # JSON Schema (generated)
 ├── src/myctl/          # Go source code
 │   ├── cmd/            # Cobra commands
+│   ├── config/         # Typed config struct
 │   ├── internal/       # Private packages
 │   └── version/        # Version info
 ├── docs/               # MkDocs documentation
 ├── docker/             # Dockerfiles
 ├── just/               # justfile modules
-│   └── cicd.just       # CI/CD recipes
+│   ├── cicd.just       # CI/CD recipes
+│   ├── config.just     # Config management recipes
+│   └── git.just        # Git operations
+├── lefthook.yml        # Pre-commit hooks
 ├── .gitlab-ci.yml      # GitLab CI (if ci_platform=gitlab)
 └── .github/workflows/  # GitHub Actions (if ci_platform=github)
 ```
