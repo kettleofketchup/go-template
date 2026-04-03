@@ -6,9 +6,17 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+{% if ci_platform == 'gitlab' -%}
+	"{{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}/config"
+{%- else -%}
+	"github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}/config"
+{%- endif %}
 )
 
-var cfgFile string
+var (
+	cfgFile   string
+	AppConfig *config.Config
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "{{ tool_name }}",
@@ -18,7 +26,6 @@ var rootCmd = &cobra.Command{
 Configure it using a config file, environment variables, or flags.`,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -28,11 +35,12 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config/{{ tool_name }}.yaml)")
 }
 
 func initConfig() {
+	config.Defaults()
+
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -42,9 +50,16 @@ func initConfig() {
 		viper.AddConfigPath(".")
 	}
 
-	viper.AutomaticEnv()
+	config.SetupEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+
+	cfg, err := config.Load()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+		os.Exit(1)
+	}
+	AppConfig = cfg
 }
