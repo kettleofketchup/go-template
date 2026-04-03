@@ -5,15 +5,16 @@ set quiet
 set dotenv-load
 
 # Modules - call as `just module::recipe`
-mod go 'just/go.just'
-mod docs 'just/docs.just'
-mod docker 'just/docker.just'
-mod release 'just/release.just'
-mod compose 'just/compose.just'
 mod certs 'just/certs.just'
-mod testing 'just/testing.just'
 mod cicd 'just/cicd.just'
+mod compose 'just/compose.just'
 mod copier 'just/copier.just'
+mod docker 'just/docker.just'
+mod docs 'just/docs.just'
+mod git 'just/git.just'
+mod go 'just/go.just'
+mod release 'just/release.just'
+mod testing 'just/testing.just'
 
 # Import top-level recipes (merged into root namespace)
 import 'just/dev.just'
