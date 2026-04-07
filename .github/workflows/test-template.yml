@@ -21,7 +21,7 @@ jobs:
       - name: Generate GitLab project
         run: |
           mkdir -p /tmp/test-gitlab
-          copier copy . /tmp/test-gitlab \
+          copier copy . /tmp/test-gitlab/testproj \
             --trust \
             --defaults \
             -d project_name=testproj \
@@ -77,7 +77,7 @@ jobs:
       - name: Generate GitHub project
         run: |
           mkdir -p /tmp/test-github
-          copier copy . /tmp/test-github \
+          copier copy . /tmp/test-github/testproj \
             --trust \
             --defaults \
             -d project_name=testproj \
@@ -144,7 +144,7 @@ jobs:
       - name: Generate project
         run: |
           mkdir -p /tmp/test-build
-          copier copy . /tmp/test-build \
+          copier copy . /tmp/test-build/testproj \
             --trust \
             --defaults \
             -d project_name=testproj \
