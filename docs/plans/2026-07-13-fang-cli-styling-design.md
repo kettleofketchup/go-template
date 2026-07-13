@@ -1,7 +1,8 @@
 # Fang CLI styling for the cobra template — Design
 
 **Date:** 2026-07-13
-**Status:** Approved (pending spec review)
+**Status:** Implemented & verified (both CI variants: gofmt clean, `go build`/`go vet` green,
+golangci-lint 0 issues, styled UX confirmed)
 **Topic:** Replace the hand-rolled cobra `Execute()` with Charmbracelet **Fang** to give every
 generated project styled help/usage/errors, an automatic `--version`, shell completions, man
 pages, and a per-project brand accent color — plus a coordinated dependency/CI upgrade.
