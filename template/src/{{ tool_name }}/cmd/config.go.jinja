@@ -1,3 +1,8 @@
+{% if ci_platform == 'gitlab' -%}
+{%- set module = gitlab_url ~ '/' ~ project_name ~ '/src/' ~ tool_name -%}
+{%- else -%}
+{%- set module = 'github.com/' ~ (github_registry | replace('ghcr.io/', '')) ~ '/src/' ~ tool_name -%}
+{%- endif -%}
 package cmd
 
 import (
@@ -5,16 +10,12 @@ import (
 	"fmt"
 	"os"
 
-	"charm.land/lipgloss/v2"
 	"github.com/invopop/jsonschema"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
-{% if ci_platform == 'gitlab' -%}
-	"{{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}/config"
-{%- else -%}
-	"github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}/config"
-{%- endif %}
+
+	"{{ module }}/config"
 )
 
 var configCmd = &cobra.Command{
@@ -42,9 +43,9 @@ var configPathCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		f := viper.ConfigFileUsed()
 		if f == "" {
-			lipgloss.Println(labelStyle.Render("No config file loaded (using defaults)"))
+			printLine(labelStyle.Render("No config file loaded (using defaults)"))
 		} else {
-			lipgloss.Println(accentStyle.Render(f))
+			printLine(accentStyle.Render(f))
 		}
 	},
 }

@@ -1,3 +1,8 @@
+{% if ci_platform == 'gitlab' -%}
+{%- set module = gitlab_url ~ '/' ~ project_name ~ '/src/' ~ tool_name -%}
+{%- else -%}
+{%- set module = 'github.com/' ~ (github_registry | replace('ghcr.io/', '')) ~ '/src/' ~ tool_name -%}
+{%- endif -%}
 package cmd
 
 import (
@@ -5,16 +10,11 @@ import (
 	"os"
 
 	"charm.land/fang/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-{% if ci_platform == 'gitlab' -%}
-	"{{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}/config"
-	"{{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}/version"
-{%- else -%}
-	"github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}/config"
-	"github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}/version"
-{%- endif %}
+
+	"{{ module }}/config"
+	"{{ module }}/version"
 )
 
 var (
@@ -65,12 +65,12 @@ func initConfig() {
 	config.SetupEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
-		lipgloss.Fprintln(os.Stderr, labelStyle.Render("Using config file:"), viper.ConfigFileUsed())
+		fprintLine(os.Stderr, labelStyle.Render("Using config file:"), viper.ConfigFileUsed())
 	}
 
 	cfg, err := config.Load()
 	if err != nil {
-		lipgloss.Fprintln(os.Stderr, errorStyle.Render("Error loading config:"), err.Error())
+		fprintLine(os.Stderr, errorStyle.Render("Error loading config:"), err.Error())
 		os.Exit(1)
 	}
 	AppConfig = cfg

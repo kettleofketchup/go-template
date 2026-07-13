@@ -55,8 +55,9 @@ overrides Fang's `Title` role with it; theme more roles by overriding other
 `fang.ColorScheme` fields there.
 
 **Styling your own output.** Route human-facing lines through the shared
-`accentStyle` / `labelStyle` / `errorStyle` with `lipgloss.Println` / `lipgloss.Fprintln`
-(not `fmt`) so colors downsample correctly. Keep machine-readable output (JSON/YAML) raw.
+`accentStyle` / `labelStyle` / `errorStyle` and the `printLine` / `fprintLine` helpers
+in `style.go` (best-effort wrappers over Lip Gloss that satisfy `errcheck`), so colors
+downsample correctly. Keep machine-readable output (JSON/YAML) raw.
 
 > `-v` is reserved by Fang for `--version`. Don't reuse it as a subcommand shorthand.
 

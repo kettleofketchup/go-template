@@ -1,10 +1,11 @@
+{% if ci_platform == 'gitlab' -%}
+{%- set module = gitlab_url ~ '/' ~ project_name ~ '/src/' ~ tool_name -%}
+{%- else -%}
+{%- set module = 'github.com/' ~ (github_registry | replace('ghcr.io/', '')) ~ '/src/' ~ tool_name -%}
+{%- endif -%}
 package main
 
-{% if ci_platform == 'gitlab' -%}
-import "{{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}/cmd"
-{%- else -%}
-import "github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}/cmd"
-{%- endif %}
+import "{{ module }}/cmd"
 
 func main() {
 	cmd.Execute()

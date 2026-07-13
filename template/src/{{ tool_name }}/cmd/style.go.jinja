@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"io"
+
 	"charm.land/fang/v2"
 	"charm.land/lipgloss/v2"
 )
@@ -27,3 +29,9 @@ var (
 	labelStyle  = lipgloss.NewStyle().Faint(true)
 	errorStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Bold(true)
 )
+
+// printLine and fprintLine write colorprofile-aware styled output, ignoring the
+// write error like fmt.Println does (best-effort terminal output). Colors
+// downsample automatically and disappear under NO_COLOR / non-TTY.
+func printLine(args ...any)               { _, _ = lipgloss.Println(args...) }
+func fprintLine(w io.Writer, args ...any) { _, _ = lipgloss.Fprintln(w, args...) }
