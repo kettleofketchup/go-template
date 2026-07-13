@@ -42,3 +42,9 @@ self_update:
   type: bool
   help: "Include self-update command (downloads latest release from GitHub/GitLab)"
   default: true
+
+accent_color:
+  type: str
+  help: "Brand accent color for CLI help/output (hex). Default is Fang's own accent."
+  default: "#6B50FF"
+  validator: "{% if not accent_color.startswith('#') or accent_color|length not in [4, 7] %}Must be a hex color like #6B50FF or #abc{% endif %}"

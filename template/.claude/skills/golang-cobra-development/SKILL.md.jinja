@@ -8,6 +8,7 @@ description: Use when building CLI commands, adding flags, creating subcommands,
 ## Overview
 
 Patterns for building CLI applications with Cobra and Viper in {{ project_name }}.
+CLI output is styled with [Charmbracelet Fang](https://github.com/charmbracelet/fang).
 
 ## Project Structure
 
@@ -15,12 +16,49 @@ Patterns for building CLI applications with Cobra and Viper in {{ project_name }
 src/{{ tool_name }}/
 ├── main.go              # Entry point
 ├── cmd/
-│   ├── root.go          # Root command, global flags
+│   ├── root.go          # Root command, Fang entrypoint, global flags
+│   ├── style.go         # Brand color scheme (Fang) + shared lipgloss styles
 │   └── version.go       # Version subcommand
 ├── internal/            # Private packages
 └── version/
     └── version.go       # Build-time version variables
 ```
+
+## Styled output with Fang
+
+`Execute()` runs the root command through `fang.Execute` instead of
+`rootCmd.Execute()`. Fang provides, out of the box:
+
+- Fully styled help / usage pages and error messages.
+- An automatic `--version` / `-v` flag (fed by `fang.WithVersion` / `fang.WithCommit`).
+- Hidden `completion` and `man` subcommands.
+
+Color degrades automatically under `NO_COLOR` and non-TTY, so it is safe in pipes and CI.
+
+```go
+func Execute() {
+    if err := fang.Execute(
+        context.Background(),
+        rootCmd,
+        fang.WithVersion(version.Version),
+        fang.WithCommit(version.Commit),
+        fang.WithColorSchemeFunc(brandColorScheme),
+    ); err != nil {
+        os.Exit(1)
+    }
+}
+```
+
+**Brand accent.** The accent color is set once in `cmd/style.go` (`accentColor`,
+chosen at scaffold time, default `#6B50FF` = Fang's own accent). `brandColorScheme`
+overrides Fang's `Title` role with it; theme more roles by overriding other
+`fang.ColorScheme` fields there.
+
+**Styling your own output.** Route human-facing lines through the shared
+`accentStyle` / `labelStyle` / `errorStyle` with `lipgloss.Println` / `lipgloss.Fprintln`
+(not `fmt`) so colors downsample correctly. Keep machine-readable output (JSON/YAML) raw.
+
+> `-v` is reserved by Fang for `--version`. Don't reuse it as a subcommand shorthand.
 
 ## Adding a New Command
 
@@ -81,8 +119,8 @@ func init() {
 // Persistent (inherited by subcommands)
 rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
 
-// Local (only this command)
-exampleCmd.Flags().BoolP("verbose", "v", false, "verbose output")
+// Local (only this command; avoid -v, reserved by Fang for --version)
+exampleCmd.Flags().Bool("verbose", false, "verbose output")
 
 // Required
 exampleCmd.MarkFlagRequired("name")
@@ -130,7 +168,7 @@ just build  # Injects version.Version, version.Commit, version.BuildDate
 |------|------|
 | Add command | `rootCmd.AddCommand(cmd)` |
 | String flag | `cmd.Flags().StringP("name", "n", "default", "help")` |
-| Bool flag | `cmd.Flags().BoolP("verbose", "v", false, "help")` |
+| Bool flag | `cmd.Flags().Bool("verbose", false, "help")` |
 | Get flag | `cmd.Flags().GetString("name")` |
 | Viper get | `viper.GetString("key")` |
 | Required | `cmd.MarkFlagRequired("name")` |

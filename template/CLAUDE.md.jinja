@@ -2,21 +2,24 @@
 
 ## Project Overview
 
-{{ project_name }} is a Go CLI tool built with Cobra.
+{{ project_name }} is a Go CLI tool built with Cobra, styled with Charmbracelet Fang.
 
 ## Architecture
 
 ```
 src/{{ tool_name }}/
-├── cmd/           # CLI commands (Cobra)
+├── cmd/           # CLI commands (Cobra); root.go runs Fang, style.go holds the theme
 ├── internal/      # Private packages
 └── version/       # Build-time version info
 ```
 
 ## Key Technologies
 
-- **Language**: Go 1.23+
-- **CLI**: Cobra
+- **Language**: Go 1.25+
+- **CLI**: Cobra, wrapped with [Fang](https://github.com/charmbracelet/fang) for styled
+  help/usage/errors, `--version`, completions, and man pages
+- **Styling**: Lip Gloss (`charm.land/lipgloss/v2`) — brand accent set in `cmd/style.go`
+  (`accentColor`); route human-facing output through the shared styles, keep JSON/YAML raw
 - **Config**: Viper (YAML/JSON/TOML)
 
 ## Build System

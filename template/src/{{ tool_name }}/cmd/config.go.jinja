@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"charm.land/lipgloss/v2"
 	"github.com/invopop/jsonschema"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -41,9 +42,9 @@ var configPathCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		f := viper.ConfigFileUsed()
 		if f == "" {
-			fmt.Println("No config file loaded (using defaults)")
+			lipgloss.Println(labelStyle.Render("No config file loaded (using defaults)"))
 		} else {
-			fmt.Println(f)
+			lipgloss.Println(accentStyle.Render(f))
 		}
 	},
 }
