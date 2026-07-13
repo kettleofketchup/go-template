@@ -34,7 +34,7 @@ test-template: _build
         -d ci_platform=gitlab \
         -d gitlab_url={{ TEST_GITLAB_URL }} \
         -d gitlab_registry={{ TEST_GITLAB_REGISTRY }} \
-        /workspace
+        /workspace/{{ TEST_PROJECT_NAME }}
     @echo "=== Running generated project pipeline ==="
     cd {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }} && just build
     cd {{ TEST_OUTPUT_DIR }}/{{ TEST_PROJECT_NAME }} && just test
