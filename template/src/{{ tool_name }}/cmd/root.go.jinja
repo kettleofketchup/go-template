@@ -1,16 +1,20 @@
+{% if ci_platform == 'gitlab' -%}
+{%- set module = gitlab_url ~ '/' ~ project_name ~ '/src/' ~ tool_name -%}
+{%- else -%}
+{%- set module = 'github.com/' ~ (github_registry | replace('ghcr.io/', '')) ~ '/src/' ~ tool_name -%}
+{%- endif -%}
 package cmd
 
 import (
-	"fmt"
+	"context"
 	"os"
 
+	"charm.land/fang/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-{% if ci_platform == 'gitlab' -%}
-	"{{ gitlab_url }}/{{ project_name }}/src/{{ tool_name }}/config"
-{%- else -%}
-	"github.com/{{ github_registry | replace('ghcr.io/', '') }}/src/{{ tool_name }}/config"
-{%- endif %}
+
+	"{{ module }}/config"
+	"{{ module }}/version"
 )
 
 var (
@@ -26,9 +30,17 @@ var rootCmd = &cobra.Command{
 Configure it using a config file, environment variables, or flags.`,
 }
 
+// Execute runs the root command through Fang, which provides styled help,
+// usage and error output, an automatic --version flag, shell completions and
+// man pages. Color degrades automatically under NO_COLOR / non-TTY.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	if err := fang.Execute(
+		context.Background(),
+		rootCmd,
+		fang.WithVersion(version.Version),
+		fang.WithCommit(version.Commit),
+		fang.WithColorSchemeFunc(brandColorScheme),
+	); err != nil {
 		os.Exit(1)
 	}
 }
@@ -53,12 +65,12 @@ func initConfig() {
 	config.SetupEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		fprintLine(os.Stderr, labelStyle.Render("Using config file:"), viper.ConfigFileUsed())
 	}
 
 	cfg, err := config.Load()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+		fprintLine(os.Stderr, errorStyle.Render("Error loading config:"), err.Error())
 		os.Exit(1)
 	}
 	AppConfig = cfg

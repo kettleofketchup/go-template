@@ -1,0 +1,37 @@
+package cmd
+
+import (
+	"io"
+
+	"charm.land/fang/v2"
+	"charm.land/lipgloss/v2"
+)
+
+// accentColor is this project's brand accent, chosen at scaffold time. The
+// default (#6B50FF) matches Fang's own Title color (charmtone "Charple"), so an
+// unchanged value reproduces Fang's stock look exactly.
+const accentColor = "{{ accent_color }}"
+
+// brandColorScheme starts from Fang's default scheme and swaps in the project
+// accent for the Title role. Other roles (Command, Flag, ErrorHeader, ...) can
+// be themed the same way — override the corresponding fang.ColorScheme fields.
+func brandColorScheme(c lipgloss.LightDarkFunc) fang.ColorScheme {
+	cs := fang.DefaultColorScheme(c)
+	cs.Title = lipgloss.Color(accentColor)
+	return cs
+}
+
+// Shared styles for the CLI's own (human-facing) output. Machine-readable
+// output — e.g. `config show` (YAML) and `config schema` (JSON) — is left raw
+// so pipes and redirects are not corrupted.
+var (
+	accentStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(accentColor)).Bold(true)
+	labelStyle  = lipgloss.NewStyle().Faint(true)
+	errorStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Bold(true)
+)
+
+// printLine and fprintLine write colorprofile-aware styled output, ignoring the
+// write error like fmt.Println does (best-effort terminal output). Colors
+// downsample automatically and disappear under NO_COLOR / non-TTY.
+func printLine(args ...any)               { _, _ = lipgloss.Println(args...) }
+func fprintLine(w io.Writer, args ...any) { _, _ = lipgloss.Fprintln(w, args...) }
