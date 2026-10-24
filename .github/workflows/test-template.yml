@@ -134,11 +134,11 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.27'
 
       - name: Install golangci-lint
         run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.11.4
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.15.0
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Generate project
@@ -172,3 +172,45 @@ jobs:
       - name: Run just cicd::lint
         working-directory: /tmp/test-build/testproj
         run: just cicd::lint
+
+  # Runs gofmt on the raw render. `just lint` formats before linting, so a
+  # template that renders unformatted Go would otherwise pass every other job.
+  test-gofmt:
+    name: Rendered Go is gofmt-clean (${{ matrix.ci_platform }}, self_update=${{ matrix.self_update }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_platform: [gitlab, github]
+        self_update: [true, false]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install copier
+        run: pipx install copier
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+
+      - name: Generate project
+        run: |
+          copier copy . /tmp/test-gofmt/testproj \
+            --trust \
+            --defaults \
+            -d project_name=testproj \
+            -d tool_name=testtool \
+            -d ci_platform=${{ matrix.ci_platform }} \
+            -d self_update=${{ matrix.self_update }}
+
+      - name: Check gofmt
+        run: |
+          unformatted=$(gofmt -l /tmp/test-gofmt/testproj/src)
+          if [ -n "$unformatted" ]; then
+            echo "Rendered files are not gofmt-clean:"
+            echo "$unformatted"
+            gofmt -d /tmp/test-gofmt/testproj/src
+            exit 1
+          fi
+          echo "✓ gofmt-clean"
