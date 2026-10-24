@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.25-bookworm AS builder
+FROM golang:1.27-trixie AS builder
 
 WORKDIR /build
 
@@ -25,7 +25,7 @@ RUN cd src/{{ tool_name }} && \
     -o /{{ tool_name }} .
 
 # Runtime stage
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
